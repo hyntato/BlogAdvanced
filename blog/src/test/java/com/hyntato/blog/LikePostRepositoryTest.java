@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
@@ -32,25 +33,28 @@ class LikePostRepositoryTest {
     @Test
     @Order(1)
     public void createLikePost() {
-        User user = new User();
-        user.setName("hyn");
-        user.setEmail("hyn@gmail.com");
-        user.setPassword("hynPassword");
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
         User savedUser = userRepository.save(user);
 
-        Post post = new Post();
-        post.setUser(savedUser);
-        post.setTitle("hynTitle");
-        post.setContent("hynContent");
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
         Post savedPost = postRepository.save(post);
 
-        LikePost likePost = new LikePost();
-        likePost.setUser(savedUser);
-        likePost.setPost(savedPost);
+        LikePost likePost = LikePost.builder()
+                .user(savedUser)
+                .post(savedPost)
+                .build();
         LikePost savedLikePost = likePostRepository.save(likePost);
         LikePost newLikePost = likePostRepository.findById(savedLikePost.getId()).get();
 
-//        assertEquals(9L, newLikePost.getPost().getId());
+        assertEquals(6L, newLikePost.getPost().getId());
     }
 
     @Test

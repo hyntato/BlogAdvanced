@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
@@ -36,32 +37,36 @@ class LikeCommentRepositoryTest {
     @Test
     @Order(1)
     public void createLikeComment() {
-        User user = new User();
-        user.setName("hyn");
-        user.setEmail("hyn@gmail.com");
-        user.setPassword("hynPassword");
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
         User savedUser = userRepository.save(user);
 
-        Post post = new Post();
-        post.setUser(savedUser);
-        post.setTitle("hynTitle");
-        post.setContent("hynContent");
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
         Post savedPost = postRepository.save(post);
 
-        Comment comment = new Comment();
-        comment.setUser(savedUser);
-        comment.setPost(savedPost);
-        comment.setContent("hynComment");
-        comment.setDeleted(false);
+        Comment comment = Comment.builder()
+                .user(savedUser)
+                .post(savedPost)
+                .content("hynComment")
+                .isDeleted(false)
+                .build();
         Comment savedComment = commentRepository.save(comment);
 
-        LikeComment likeComment = new LikeComment();
-        likeComment.setUser(savedUser);
-        likeComment.setComment(savedComment);
+        LikeComment likeComment = LikeComment.builder()
+                .user(savedUser)
+                .comment(savedComment)
+                .build();
         LikeComment savedLikeComment = likeCommentRepository.save(likeComment);
         LikeComment newLikeComment = likeCommentRepository.findById(savedLikeComment.getId()).get();
 
-//        assertEquals(13L, newLikeComment.getUser().getId());
+        assertEquals(10L, newLikeComment.getUser().getId());
     }
 
     @Test

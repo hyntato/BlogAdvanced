@@ -25,10 +25,11 @@ class UserRepositoryTest {
     @Test
     @Order(1)
     public void createUser() {
-        User user = new User();
-        user.setName("hyn");
-        user.setEmail("hyn@gmail.com");
-        user.setPassword("hynPassword");
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
         User savedUser = userRepository.save(user);
         User newUser = userRepository.findById(savedUser.getId()).get();
         assertEquals("hyn", newUser.getName());
@@ -53,12 +54,16 @@ class UserRepositoryTest {
     public void updateUser() {
         Optional<User> user = userRepository.findById(1L);
         user.ifPresent( currentUser -> {
-            currentUser.setName("updateName");
-            currentUser.setEmail("updateEmail");
-            currentUser.setPassword("updatePassword");
-            userRepository.save(currentUser);
+            User updateUser = User.builder()
+                    .id(currentUser.getId())
+                    .name("updateName")
+                    .email("updateEmail")
+                    .password("updatePassword")
+                    .build();
+            userRepository.save(updateUser);
         });
-        assertEquals("updateName", user.get().getName());
+        User updatedUser = userRepository.findById(1L).get();
+        assertEquals("updateName", updatedUser.getName());
     }
 
 }

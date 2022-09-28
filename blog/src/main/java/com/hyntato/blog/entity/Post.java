@@ -7,9 +7,9 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Post extends BaseEntity {
     @Id
@@ -24,4 +24,11 @@ public class Post extends BaseEntity {
     String title;
 
     String content;
+
+    @Builder
+    public Post(User user, String title, String content) {
+        this.user = user;
+        this.title = title;
+        this.content = content;
+    }
 }

@@ -7,9 +7,9 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LikeComment extends BaseEntity {
     @Id
@@ -24,4 +24,10 @@ public class LikeComment extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="comment_id")
     Comment comment;
+
+    @Builder
+    public LikeComment(User user, Comment comment) {
+        this.user = user;
+        this.comment = comment;
+    }
 }

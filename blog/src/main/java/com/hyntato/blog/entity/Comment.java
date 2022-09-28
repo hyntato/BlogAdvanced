@@ -7,9 +7,9 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Comment extends BaseEntity {
     @Id
@@ -32,5 +32,14 @@ public class Comment extends BaseEntity {
     String content;
 
     boolean isDeleted;
+
+    @Builder
+    public Comment(User user, Post post, Comment comment, String content, boolean isDeleted) {
+        this.user = user;
+        this.post = post;
+        this.comment = comment;
+        this.content = content;
+        this.isDeleted = isDeleted;
+    }
 }
 

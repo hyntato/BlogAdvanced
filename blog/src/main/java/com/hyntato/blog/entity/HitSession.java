@@ -7,9 +7,9 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class HitSession extends BaseEntity {
     @Id
@@ -24,4 +24,10 @@ public class HitSession extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="post_id")
     private Post post;
+
+    @Builder
+    public HitSession(User user, Post post) {
+        this.user = user;
+        this.post = post;
+    }
 }

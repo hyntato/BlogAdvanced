@@ -29,16 +29,18 @@ class PostRepositoryTest {
     @Test
     @Order(1)
     public void createPost() {
-        User user = new User();
-        user.setName("hyn");
-        user.setEmail("hyn@gmail.com");
-        user.setPassword("hynPassword");
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
         User savedUser = userRepository.save(user);
 
-        Post post = new Post();
-        post.setUser(savedUser);
-        post.setTitle("hynTitle");
-        post.setContent("hynContent");
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
         Post savedPost = postRepository.save(post);
         Post newPost = postRepository.findById(savedPost.getId()).get();
 
@@ -64,17 +66,15 @@ class PostRepositoryTest {
     public void updatePost() {
         Optional<Post> post = postRepository.findById(1L);
         post.ifPresent( currentPost -> {
-            currentPost.setTitle("updateTitle");
-            currentPost.setContent("updateContent");
-            postRepository.save(currentPost);
+            Post updatePost = Post.builder()
+                    .id(currentPost.getId())
+                    .title("updateTitle")
+                    .content("updateContent")
+                    .build();
+            postRepository.save(updatePost);
         });
-        assertEquals("updateTitle", post.get().getTitle());
+        Post updatedPost = postRepository.findById(1L).get();
+        assertEquals("updateTitle", updatedPost.getTitle());
     }
 
-//    @Test
-//    @Order(5)
-//    public void findPostsByUserId() {
-//        List<Post> posts = postRepository.findPostsByUserId(2L);
-//        assertEquals(1, posts.size());
-//    }
 }

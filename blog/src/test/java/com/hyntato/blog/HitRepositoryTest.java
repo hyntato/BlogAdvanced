@@ -33,25 +33,28 @@ class HitRepositoryTest {
     @Test
     @Order(1)
     public void createHit() {
-        User user = new User();
-        user.setName("hyn");
-        user.setEmail("hyn@gmail.com");
-        user.setPassword("hynPassword");
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
         User savedUser = userRepository.save(user);
 
-        Post post = new Post();
-        post.setUser(savedUser);
-        post.setTitle("hynTitle");
-        post.setContent("hynContent");
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
         Post savedPost = postRepository.save(post);
 
-        Hit hit = new Hit();
-        hit.setPost(savedPost);
-        hit.setCount(1);
+        Hit hit = Hit.builder()
+                .post(savedPost)
+                .count(1)
+                .build();
         Hit savedHit = hitRepository.save(hit);
         Hit newHit = hitRepository.findById(savedHit.getId()).get();
 
-        assertEquals("hynTitle", newHit.getPost().getTitle());
+        assertEquals(10L, newHit.getPost().getId());
     }
 
     @Test
@@ -73,10 +76,15 @@ class HitRepositoryTest {
     public void updateHit() {
         Optional<Hit> hit = hitRepository.findById(1L);
         hit.ifPresent( currentHit -> {
-            currentHit.setCount(currentHit.getCount() + 1);
-            hitRepository.save(currentHit);
+            Hit updateHit = Hit.builder()
+                    .id(currentHit.getId())
+                    .post(currentHit.getPost())
+                    .count(currentHit.getCount()+1)
+                    .build();
+            hitRepository.save(updateHit);
         });
-        assertEquals(2, hit.get().getCount());
+        Hit updatedHit = hitRepository.findById(1L).get();
+        assertEquals(2, updatedHit.getCount());
     }
 
 }

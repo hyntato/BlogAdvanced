@@ -17,7 +17,7 @@ public class Hit extends BaseEntity {
     @Column(name = "hit_id")
     Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="post_id")
     Post post;
 

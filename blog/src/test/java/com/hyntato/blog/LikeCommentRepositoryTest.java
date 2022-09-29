@@ -8,13 +8,11 @@ import com.hyntato.blog.repository.CommentRepository;
 import com.hyntato.blog.repository.LikeCommentRepository;
 import com.hyntato.blog.repository.PostRepository;
 import com.hyntato.blog.repository.UserRepository;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
-@TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
 class LikeCommentRepositoryTest {
 
     @Autowired
@@ -35,7 +32,7 @@ class LikeCommentRepositoryTest {
     private CommentRepository commentRepository;
 
     @Test
-    @Order(1)
+    @Transactional
     public void createLikeComment() {
         User user = User.builder()
                 .name("hyn")
@@ -64,23 +61,80 @@ class LikeCommentRepositoryTest {
                 .comment(savedComment)
                 .build();
         LikeComment savedLikeComment = likeCommentRepository.save(likeComment);
-        LikeComment newLikeComment = likeCommentRepository.findById(savedLikeComment.getId()).get();
 
-        assertEquals(10L, newLikeComment.getUser().getId());
+        assertEquals(likeComment.getId(), savedLikeComment.getId());
     }
 
     @Test
-    @Order(2)
+    @Transactional
     public void findLikeCommentById() {
-        Optional<LikeComment> likeComment = likeCommentRepository.findById(1L);
-        assertNotNull(likeComment.get());
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        Post savedPost = postRepository.save(post);
+
+        Comment comment = Comment.builder()
+                .user(savedUser)
+                .post(savedPost)
+                .content("hynComment")
+                .isDeleted(false)
+                .build();
+        Comment savedComment = commentRepository.save(comment);
+
+        LikeComment likeComment = LikeComment.builder()
+                .user(savedUser)
+                .comment(savedComment)
+                .build();
+        LikeComment savedLikeComment = likeCommentRepository.save(likeComment);
+
+        Optional<LikeComment> foundLikeComment = likeCommentRepository.findById(savedLikeComment.getId());
+
+        assertNotNull(foundLikeComment.get());
     }
 
     @Test
-    @Order(3)
+    @Transactional
     public void findAllLikeComments() {
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        Post savedPost = postRepository.save(post);
+
+        Comment comment = Comment.builder()
+                .user(savedUser)
+                .post(savedPost)
+                .content("hynComment")
+                .isDeleted(false)
+                .build();
+        Comment savedComment = commentRepository.save(comment);
+
+        LikeComment likeComment = LikeComment.builder()
+                .user(savedUser)
+                .comment(savedComment)
+                .build();
+        likeCommentRepository.save(likeComment);
+
         List<LikeComment> likeComments = likeCommentRepository.findAll();
-        assertNotNull(likeComments);
+
+        assertEquals(1, likeComments.size());
     }
 
 }

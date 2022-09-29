@@ -4,13 +4,11 @@ import com.hyntato.blog.entity.Post;
 import com.hyntato.blog.entity.User;
 import com.hyntato.blog.repository.PostRepository;
 import com.hyntato.blog.repository.UserRepository;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
-@TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
 class PostRepositoryTest {
 
     @Autowired
@@ -27,7 +24,7 @@ class PostRepositoryTest {
     private UserRepository userRepository;
 
     @Test
-    @Order(1)
+    @Transactional
     public void createPost() {
         User user = User.builder()
                 .name("hyn")
@@ -42,39 +39,79 @@ class PostRepositoryTest {
                 .content("hynContent")
                 .build();
         Post savedPost = postRepository.save(post);
-        Post newPost = postRepository.findById(savedPost.getId()).get();
 
-        assertEquals("hynTitle", newPost.getTitle());
+        assertEquals(post.getId(), savedPost.getId());
     }
 
     @Test
-    @Order(2)
+    @Transactional
     public void findPostById() {
-        Optional<Post> post = postRepository.findById(1L);
-        assertNotNull(post.get());
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        Post savedPost = postRepository.save(post);
+
+        Optional<Post> foundPost = postRepository.findById(savedPost.getId());
+
+        assertNotNull(foundPost.get());
     }
 
     @Test
-    @Order(3)
+    @Transactional
     public void findAllPosts() {
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        postRepository.save(post);
+
         List<Post> posts = postRepository.findAll();
-        assertNotNull(posts);
+
+        assertEquals(1, posts.size());
     }
 
     @Test
-    @Order(4)
+    @Transactional
     public void updatePost() {
-        Optional<Post> post = postRepository.findById(1L);
-        post.ifPresent( currentPost -> {
-            Post updatePost = Post.builder()
-                    .id(currentPost.getId())
-                    .title("updateTitle")
-                    .content("updateContent")
-                    .build();
-            postRepository.save(updatePost);
-        });
-        Post updatedPost = postRepository.findById(1L).get();
-        assertEquals("updateTitle", updatedPost.getTitle());
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        Post savedPost = postRepository.save(post);
+
+        Post updatePost = Post.builder()
+                .id(savedPost.getId())
+                .title("updateTitle")
+                .content("updateContent")
+                .build();
+        Post updatedPost = postRepository.save(updatePost);
+
+        assertEquals(updatePost.getTitle(), updatedPost.getTitle());
     }
 
 }

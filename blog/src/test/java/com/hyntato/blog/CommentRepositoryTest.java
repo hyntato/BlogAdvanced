@@ -6,13 +6,11 @@ import com.hyntato.blog.entity.User;
 import com.hyntato.blog.repository.CommentRepository;
 import com.hyntato.blog.repository.PostRepository;
 import com.hyntato.blog.repository.UserRepository;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
-@TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
 class CommentRepositoryTest {
 
     @Autowired
@@ -31,7 +28,7 @@ class CommentRepositoryTest {
     private PostRepository postRepository;
 
     @Test
-    @Order(1)
+    @Transactional
     public void createComment() {
         User user = User.builder()
                 .name("hyn")
@@ -54,41 +51,105 @@ class CommentRepositoryTest {
                 .isDeleted(false)
                 .build();
         Comment savedComment = commentRepository.save(comment);
-        Comment newComment = commentRepository.findById(savedComment.getId()).get();
 
-        assertEquals("hynComment", newComment.getContent());
+        assertEquals(comment.getId(), savedComment.getId());
     }
 
     @Test
-    @Order(2)
+    @Transactional
     public void findCommentById() {
-        Optional<Comment> comment = commentRepository.findById(1L);
-        assertNotNull(comment.get());
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        Post savedPost = postRepository.save(post);
+
+        Comment comment = Comment.builder()
+                .user(savedUser)
+                .post(savedPost)
+                .content("hynComment")
+                .isDeleted(false)
+                .build();
+        Comment savedComment = commentRepository.save(comment);
+
+        Optional<Comment> foundComment = commentRepository.findById(savedComment.getId());
+
+        assertNotNull(foundComment.get());
     }
 
     @Test
-    @Order(3)
+    @Transactional
     public void findAllComments() {
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        Post savedPost = postRepository.save(post);
+
+        Comment comment = Comment.builder()
+                .user(savedUser)
+                .post(savedPost)
+                .content("hynComment")
+                .isDeleted(false)
+                .build();
+        commentRepository.save(comment);
+
         List<Comment> comments = commentRepository.findAll();
-        assertNotNull(comments);
+
+        assertEquals(1, comments.size());
     }
 
     @Test
-    @Order(4)
+    @Transactional
     public void updateComment() {
-        Optional<Comment> comment = commentRepository.findById(1L);
-        comment.ifPresent( currentComment -> {
-            Comment updateComment = Comment.builder()
-                    .id(currentComment.getId())
-                    .user(currentComment.getUser())
-                    .post(currentComment.getPost())
-                    .content("updateComment")
-                    .isDeleted(false)
-                    .build();
-            commentRepository.save(updateComment);
-        });
-        Comment updatedComment = commentRepository.findById(1L).get();
-        assertEquals("updateComment", updatedComment.getContent());
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        Post savedPost = postRepository.save(post);
+
+        Comment comment = Comment.builder()
+                .user(savedUser)
+                .post(savedPost)
+                .content("hynComment")
+                .isDeleted(false)
+                .build();
+        Comment savedComment = commentRepository.save(comment);
+
+        Comment updateComment = Comment.builder()
+                .id(savedComment.getId())
+                .user(savedComment.getUser())
+                .post(savedComment.getPost())
+                .content("updateComment")
+                .isDeleted(false)
+                .build();
+        Comment updatedComment = commentRepository.save(updateComment);
+
+        assertEquals(updateComment.getContent(), updatedComment.getContent());
     }
 
 }

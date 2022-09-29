@@ -2,13 +2,11 @@ package com.hyntato.blog;
 
 import com.hyntato.blog.entity.User;
 import com.hyntato.blog.repository.UserRepository;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,14 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
-@TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
 class UserRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
 
     @Test
-    @Order(1)
+    @Transactional
     public void createUser() {
         User user = User.builder()
                 .name("hyn")
@@ -31,39 +28,59 @@ class UserRepositoryTest {
                 .password("hynPassword")
                 .build();
         User savedUser = userRepository.save(user);
-        User newUser = userRepository.findById(savedUser.getId()).get();
-        assertEquals("hyn", newUser.getName());
+
+        assertEquals(user.getId(), savedUser.getId());
     }
 
     @Test
-    @Order(2)
+    @Transactional
     public void findUserById() {
-        Optional<User> user = userRepository.findById(1L);
-        assertNotNull(user.get());
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Optional<User> foundUser = userRepository.findById(savedUser.getId());
+
+        assertNotNull(foundUser.get());
     }
 
     @Test
-    @Order(3)
+    @Transactional
     public void findAllUsers() {
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        userRepository.save(user);
+
         List<User> users = userRepository.findAll();
-        assertNotNull(users);
+
+        assertEquals(1, users.size());
     }
 
     @Test
-    @Order(4)
+    @Transactional
     public void updateUser() {
-        Optional<User> user = userRepository.findById(1L);
-        user.ifPresent( currentUser -> {
-            User updateUser = User.builder()
-                    .id(currentUser.getId())
-                    .name("updateName")
-                    .email("updateEmail")
-                    .password("updatePassword")
-                    .build();
-            userRepository.save(updateUser);
-        });
-        User updatedUser = userRepository.findById(1L).get();
-        assertEquals("updateName", updatedUser.getName());
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        User updateUser = User.builder()
+                .id(savedUser.getId())
+                .name("updateName")
+                .email("updateEmail")
+                .password("updatePassword")
+                .build();
+        User updatedUser = userRepository.save(updateUser);
+
+        assertEquals(updateUser.getName(), updatedUser.getName());
     }
 
 }

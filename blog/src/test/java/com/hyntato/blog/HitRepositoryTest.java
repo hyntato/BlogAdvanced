@@ -6,13 +6,11 @@ import com.hyntato.blog.entity.User;
 import com.hyntato.blog.repository.HitRepository;
 import com.hyntato.blog.repository.PostRepository;
 import com.hyntato.blog.repository.UserRepository;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
-@TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
 class HitRepositoryTest {
 
     @Autowired
@@ -31,7 +28,7 @@ class HitRepositoryTest {
     private PostRepository postRepository;
 
     @Test
-    @Order(1)
+    @Transactional
     public void createHit() {
         User user = User.builder()
                 .name("hyn")
@@ -52,39 +49,97 @@ class HitRepositoryTest {
                 .count(1)
                 .build();
         Hit savedHit = hitRepository.save(hit);
-        Hit newHit = hitRepository.findById(savedHit.getId()).get();
 
-        assertEquals(10L, newHit.getPost().getId());
+        assertEquals(savedPost.getId(), savedHit.getPost().getId());
     }
 
     @Test
-    @Order(2)
+    @Transactional
     public void findHitById() {
-        Optional<Hit> hit = hitRepository.findById(1L);
-        assertNotNull(hit.get());
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        Post savedPost = postRepository.save(post);
+
+        Hit hit = Hit.builder()
+                .post(savedPost)
+                .count(1)
+                .build();
+        Hit savedHit = hitRepository.save(hit);
+
+        Optional<Hit> foundHit = hitRepository.findById(savedHit.getId());
+
+        assertNotNull(foundHit.get());
     }
 
     @Test
-    @Order(3)
+    @Transactional
     public void findAllHits() {
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        Post savedPost = postRepository.save(post);
+
+        Hit hit = Hit.builder()
+                .post(savedPost)
+                .count(1)
+                .build();
+        hitRepository.save(hit);
+
         List<Hit> hits = hitRepository.findAll();
-        assertNotNull(hits);
+
+        assertEquals(1, hits.size());
     }
 
     @Test
-    @Order(4)
+    @Transactional
     public void updateHit() {
-        Optional<Hit> hit = hitRepository.findById(1L);
-        hit.ifPresent( currentHit -> {
-            Hit updateHit = Hit.builder()
-                    .id(currentHit.getId())
-                    .post(currentHit.getPost())
-                    .count(currentHit.getCount()+1)
-                    .build();
-            hitRepository.save(updateHit);
-        });
-        Hit updatedHit = hitRepository.findById(1L).get();
-        assertEquals(2, updatedHit.getCount());
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        Post savedPost = postRepository.save(post);
+
+        Hit hit = Hit.builder()
+                .post(savedPost)
+                .count(1)
+                .build();
+        Hit savedHit = hitRepository.save(hit);
+
+        Hit updateHit = Hit.builder()
+                .id(savedHit.getId())
+                .post(savedHit.getPost())
+                .count(savedHit.getCount()+1)
+                .build();
+        Hit updatedHit = hitRepository.save(updateHit);
+
+        assertEquals(updateHit.getCount(), updatedHit.getCount());
     }
 
 }

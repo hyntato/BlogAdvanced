@@ -6,13 +6,11 @@ import com.hyntato.blog.entity.User;
 import com.hyntato.blog.repository.LikePostRepository;
 import com.hyntato.blog.repository.PostRepository;
 import com.hyntato.blog.repository.UserRepository;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
-@TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
 class LikePostRepositoryTest {
 
     @Autowired
@@ -31,7 +28,7 @@ class LikePostRepositoryTest {
     private PostRepository postRepository;
 
     @Test
-    @Order(1)
+    @Transactional
     public void createLikePost() {
         User user = User.builder()
                 .name("hyn")
@@ -52,23 +49,64 @@ class LikePostRepositoryTest {
                 .post(savedPost)
                 .build();
         LikePost savedLikePost = likePostRepository.save(likePost);
-        LikePost newLikePost = likePostRepository.findById(savedLikePost.getId()).get();
 
-        assertEquals(6L, newLikePost.getPost().getId());
+        assertEquals(likePost.getId(), savedLikePost.getId());
     }
 
     @Test
-    @Order(2)
+    @Transactional
     public void findLikePostById() {
-        Optional<LikePost> likePost = likePostRepository.findById(1L);
-        assertNotNull(likePost.get());
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        Post savedPost = postRepository.save(post);
+
+        LikePost likePost = LikePost.builder()
+                .user(savedUser)
+                .post(savedPost)
+                .build();
+        LikePost savedLikePost = likePostRepository.save(likePost);
+
+        Optional<LikePost> foundLikePost = likePostRepository.findById(savedLikePost.getId());
+
+        assertNotNull(foundLikePost.get());
     }
 
     @Test
-    @Order(3)
+    @Transactional
     public void findAllLikePosts() {
+        User user = User.builder()
+                .name("hyn")
+                .email("hyn@gmail.com")
+                .password("hynPassword")
+                .build();
+        User savedUser = userRepository.save(user);
+
+        Post post = Post.builder()
+                .user(savedUser)
+                .title("hynTitle")
+                .content("hynContent")
+                .build();
+        Post savedPost = postRepository.save(post);
+
+        LikePost likePost = LikePost.builder()
+                .user(savedUser)
+                .post(savedPost)
+                .build();
+        likePostRepository.save(likePost);
+
         List<LikePost> likePosts = likePostRepository.findAll();
-        assertNotNull(likePosts);
+
+        assertEquals(1, likePosts.size());
     }
 
 }

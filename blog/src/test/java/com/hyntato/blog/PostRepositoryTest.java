@@ -4,17 +4,21 @@ import com.hyntato.blog.entity.Post;
 import com.hyntato.blog.entity.User;
 import com.hyntato.blog.repository.PostRepository;
 import com.hyntato.blog.repository.UserRepository;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
 class PostRepositoryTest {
 
@@ -23,44 +27,38 @@ class PostRepositoryTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Test
-    @Transactional
-    public void createPost() {
-        User user = User.builder()
-                .name("hyn")
-                .email("hyn@gmail.com")
-                .password("hynPassword")
-                .build();
-        User savedUser = userRepository.save(user);
+    @BeforeAll
+    public void createPosts() {
+        List<User> users = createUsers();
+        List<Post> posts = new ArrayList<>();
+        for(int i=0; i<10; i++) {
+            Post post = Post.builder()
+                    .user(users.get(i))
+                    .title("hynTitle" + i)
+                    .content("hynContent" + i)
+                    .build();
+            posts.add(post);
+        }
+        postRepository.saveAll(posts);
+    }
 
-        Post post = Post.builder()
-                .user(savedUser)
-                .title("hynTitle")
-                .content("hynContent")
-                .build();
-        Post savedPost = postRepository.save(post);
-
-        assertEquals(post.getId(), savedPost.getId());
+    public List<User> createUsers() {
+        List<User> users = new ArrayList<>();
+        for(int i=0; i<10; i++) {
+            User user = User.builder()
+                    .name("hyn" + i)
+                    .email("hyn@gmail.com" + i)
+                    .password("hynPassword" + i)
+                    .build();
+            users.add(user);
+        }
+        return userRepository.saveAll(users);
     }
 
     @Test
     @Transactional
     public void findPostById() {
-        User user = User.builder()
-                .name("hyn")
-                .email("hyn@gmail.com")
-                .password("hynPassword")
-                .build();
-        User savedUser = userRepository.save(user);
-
-        Post post = Post.builder()
-                .user(savedUser)
-                .title("hynTitle")
-                .content("hynContent")
-                .build();
-        Post savedPost = postRepository.save(post);
-
-        Optional<Post> foundPost = postRepository.findById(savedPost.getId());
+        Optional<Post> foundPost = postRepository.findById(1L);
 
         assertNotNull(foundPost.get());
     }
@@ -68,50 +66,9 @@ class PostRepositoryTest {
     @Test
     @Transactional
     public void findAllPosts() {
-        User user = User.builder()
-                .name("hyn")
-                .email("hyn@gmail.com")
-                .password("hynPassword")
-                .build();
-        User savedUser = userRepository.save(user);
-
-        Post post = Post.builder()
-                .user(savedUser)
-                .title("hynTitle")
-                .content("hynContent")
-                .build();
-        postRepository.save(post);
-
         List<Post> posts = postRepository.findAll();
 
-        assertEquals(1, posts.size());
-    }
-
-    @Test
-    @Transactional
-    public void updatePost() {
-        User user = User.builder()
-                .name("hyn")
-                .email("hyn@gmail.com")
-                .password("hynPassword")
-                .build();
-        User savedUser = userRepository.save(user);
-
-        Post post = Post.builder()
-                .user(savedUser)
-                .title("hynTitle")
-                .content("hynContent")
-                .build();
-        Post savedPost = postRepository.save(post);
-
-        Post updatePost = Post.builder()
-                .id(savedPost.getId())
-                .title("updateTitle")
-                .content("updateContent")
-                .build();
-        Post updatedPost = postRepository.save(updatePost);
-
-        assertEquals(updatePost.getTitle(), updatedPost.getTitle());
+        assertEquals(10, posts.size());
     }
 
 }
